@@ -7,6 +7,16 @@ use Illuminate\Http\Request;
 
 class UsersController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth', [
+            'except' => ['show', 'create', 'store']
+        ]);
+        $this->middleware('guest', [
+            'only' => ['create']
+        ]);
+    }
+
     //
     public function create()
     {
@@ -41,13 +51,17 @@ class UsersController extends Controller
 
     public function edit(User $user)
     {
+        $this->authorize('update', $user);
         return view('users.edit', compact('user'));
     }
 
     public function update(User $user, Request $request)
     {
+        $this->authorize('update', $user);
+
+//        名字去重，且去掉制定id对象
         $this->validate($request, [
-            'name' => 'required|max:50',
+            'name' => 'required|unique:users,name,'.$user->id.'|max:50',
             'password' => 'nullable|confirmed|min:6'
         ]);
 
